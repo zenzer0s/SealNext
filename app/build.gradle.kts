@@ -1,12 +1,9 @@
-@file:Suppress("UnstableApiUsage")
-
 import com.android.build.api.variant.FilterConfiguration
 import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
@@ -26,7 +23,7 @@ val baseVersionName = currentVersion.name
 val currentVersionCode = currentVersion.code.toInt()
 
 android {
-    compileSdk = 35
+    compileSdk = 36
 
     if (keystorePropertiesFile.exists()) {
         val keystoreProperties = Properties()
@@ -44,9 +41,9 @@ android {
     buildFeatures { buildConfig = true }
 
     defaultConfig {
-        applicationId = "com.junkfood.seal"
+        applicationId = "com.zenzer0s.seal"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 200_000_150
         check(versionCode == currentVersionCode)
 
@@ -65,30 +62,6 @@ android {
             }
         } else {
             ndk { abiFilters.addAll(abiFilterList) }
-        }
-    }
-
-    room { schemaDirectory("$projectDir/schemas") }
-    ksp { arg("room.incremental", "true") }
-
-    androidComponents {
-        onVariants { variant ->
-            variant.outputs.forEach { output ->
-                val name =
-                    if (splitApks) {
-                        output.filters
-                            .find { it.filterType == FilterConfiguration.FilterType.ABI }
-                            ?.identifier
-                    } else {
-                        abiFilterList.firstOrNull()
-                    }
-
-                val baseAbiCode = abiCodes[name]
-
-                if (baseAbiCode != null) {
-                    output.versionCode.set(baseAbiCode + (output.versionCode.get() ?: 0))
-                }
-            }
         }
     }
 
@@ -136,27 +109,49 @@ android {
 
     lint { disable.addAll(listOf("MissingTranslation", "ExtraTranslation", "MissingQuantity")) }
 
-    applicationVariants.all {
-        outputs.all {
-            (this as com.android.build.gradle.internal.api.BaseVariantOutputImpl).outputFileName =
-                "Seal-${defaultConfig.versionName}-${name}.apk"
-        }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
-
-    kotlinOptions { freeCompilerArgs = freeCompilerArgs + "-opt-in=kotlin.RequiresOptIn" }
 
     packaging {
         resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" }
         jniLibs.useLegacyPackaging = true
     }
+    @Suppress("UnstableApiUsage")
     androidResources { generateLocaleConfig = true }
 
     namespace = "com.junkfood.seal"
 }
 
+androidComponents {
+    onVariants { variant ->
+        variant.outputs.forEach { output ->
+            val abiName =
+                if (splitApks) {
+                    output.filters
+                        .find { it.filterType == FilterConfiguration.FilterType.ABI }
+                        ?.identifier
+                } else {
+                    abiFilterList.firstOrNull()
+                }
+
+            val baseAbiCode = abiCodes[abiName]
+
+            if (baseAbiCode != null) {
+                output.versionCode.set(baseAbiCode + output.versionCode.get())
+            }
+        }
+    }
+}
+
+room { schemaDirectory("$projectDir/schemas") }
+
+ksp { arg("room.incremental", "true") }
+
 ktfmt { kotlinLangStyle() }
 
-kotlin { jvmToolchain(21) }
+kotlin { jvmToolchain(17) }
 
 dependencies {
     implementation(project(":color"))
@@ -181,6 +176,8 @@ dependencies {
     ksp(libs.room.compiler)
 
     implementation(libs.okhttp)
+
+    implementation(libs.androidx.documentfile)
 
     implementation(libs.bundles.youtubedlAndroid)
 
