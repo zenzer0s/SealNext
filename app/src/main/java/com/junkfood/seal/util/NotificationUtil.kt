@@ -251,6 +251,43 @@ object NotificationUtil {
             .run { notificationManager.notify(notificationId, build()) }
     }
 
+    fun notifyTelegramUpload(notificationId: Int, title: String) {
+        if (!NOTIFICATION.getBoolean()) return
+        NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_stat_seal)
+            .setContentTitle(title)
+            .setContentText(context.getString(R.string.telegram_uploading))
+            .setProgress(PROGRESS_MAX, PROGRESS_INITIAL, true)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .run { notificationManager.notify(notificationId, build()) }
+    }
+
+    fun finishTelegramNotification(notificationId: Int, title: String) {
+        notificationManager.cancel(notificationId)
+        if (!NOTIFICATION.getBoolean()) return
+        NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_stat_seal)
+            .setContentTitle(title)
+            .setContentText(context.getString(R.string.telegram_upload_success))
+            .setOngoing(false)
+            .setAutoCancel(true)
+            .run { notificationManager.notify(notificationId, build()) }
+    }
+
+    fun notifyTelegramError(notificationId: Int, title: String, error: String) {
+        notificationManager.cancel(notificationId)
+        if (!NOTIFICATION.getBoolean()) return
+        NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_stat_seal)
+            .setContentTitle(title)
+            .setContentText(context.getString(R.string.telegram_upload_failed))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(error))
+            .setOngoing(false)
+            .setAutoCancel(true)
+            .run { notificationManager.notify(notificationId, build()) }
+    }
+
     fun cancelAllNotifications() {
         notificationManager.cancelAll()
     }

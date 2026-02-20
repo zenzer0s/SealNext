@@ -185,6 +185,11 @@ const val TEMPLATE_SHORTCUTS = "template_shortcuts"
 const val TASK_LIST = "task_list"
 const val SAVED_LINKS = "saved_links"
 
+const val FAST_MODE = "fast_mode"
+const val TELEGRAM_UPLOAD = "telegram_upload"
+const val TELEGRAM_BOT_TOKEN = "telegram_bot_token"
+const val TELEGRAM_CHAT_ID = "telegram_chat_id"
+
 val paletteStyles =
     listOf(
         PaletteStyle.TonalSpot,

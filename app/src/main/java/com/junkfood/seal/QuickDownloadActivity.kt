@@ -18,6 +18,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.junkfood.seal.download.DownloaderV2
+import com.junkfood.seal.download.Task
 import com.junkfood.seal.ui.common.LocalDarkTheme
 import com.junkfood.seal.ui.common.SettingsProvider
 import com.junkfood.seal.ui.page.downloadv2.configure.Config
@@ -29,12 +31,15 @@ import com.junkfood.seal.ui.page.downloadv2.configure.FormatPage
 import com.junkfood.seal.ui.page.downloadv2.configure.PlaylistSelectionPage
 import com.junkfood.seal.ui.theme.SealTheme
 import com.junkfood.seal.util.DownloadUtil
+import com.junkfood.seal.util.FAST_MODE
 import com.junkfood.seal.util.PreferenceUtil
+import com.junkfood.seal.util.PreferenceUtil.getBoolean
 import com.junkfood.seal.util.matchUrlFromSharedText
 import com.junkfood.seal.util.setLanguage
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.koin.androidx.viewmodel.ext.android.getViewModel
+import org.koin.core.context.GlobalContext
 
 private const val TAG = "QuickDownloadActivity"
 
@@ -69,6 +74,20 @@ class QuickDownloadActivity : ComponentActivity() {
 
         if (sharedUrlCached.isEmpty()) {
             finish()
+            return
+        }
+
+        if (FAST_MODE.getBoolean()) {
+            val downloader: DownloaderV2 = GlobalContext.get().get()
+            val task =
+                Task(
+                    url = sharedUrlCached,
+                    preferences = DownloadUtil.DownloadPreferences.createFromPreferences(),
+                )
+            downloader.enqueue(task)
+            App.startService()
+            finish()
+            return
         }
 
         App.startService()

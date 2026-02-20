@@ -23,6 +23,8 @@ import com.junkfood.seal.util.DownloadUtil
 import com.junkfood.seal.util.FileUtil
 import com.junkfood.seal.util.NotificationUtil
 import com.junkfood.seal.util.PreferenceUtil
+import com.junkfood.seal.util.TELEGRAM_UPLOAD
+import com.junkfood.seal.util.TelegramUtil
 import com.junkfood.seal.util.VideoInfo
 import com.yausername.youtubedl_android.YoutubeDL
 import kotlin.collections.component1
@@ -41,6 +43,7 @@ import org.koin.core.component.KoinComponent
 private const val TAG = "DownloaderV2"
 
 private const val MAX_CONCURRENCY = 3
+private const val TELEGRAM_NOTIFICATION_OFFSET = 10_000
 
 interface DownloaderV2 {
     fun getTaskStateMap(): SnapshotStateMap<Task, Task.State>
@@ -309,8 +312,6 @@ class DownloaderV2Impl(private val appContext: Context) : DownloaderV2, KoinComp
                         },
                     )
                     .onSuccess { pathList ->
-                        downloadState = Completed(pathList.firstOrNull())
-
                         val text =
                             appContext.getString(
                                 if (pathList.isEmpty()) R.string.status_completed
@@ -332,6 +333,36 @@ class DownloaderV2Impl(private val appContext: Context) : DownloaderV2, KoinComp
                                     else null,
                             )
                         }
+
+                        if (with(PreferenceUtil) { TELEGRAM_UPLOAD.getBoolean() }) {
+                            val uploadNotificationId = notificationId + TELEGRAM_NOTIFICATION_OFFSET
+                            pathList.firstOrNull()?.let { path ->
+                                NotificationUtil.notifyTelegramUpload(
+                                    uploadNotificationId,
+                                    viewState.title,
+                                )
+                                TelegramUtil.uploadFile(
+                                        filePath = path,
+                                        title = viewState.title,
+                                        notificationId = uploadNotificationId,
+                                    )
+                                    .onSuccess {
+                                        NotificationUtil.finishTelegramNotification(
+                                            uploadNotificationId,
+                                            viewState.title,
+                                        )
+                                    }
+                                    .onFailure { e ->
+                                        NotificationUtil.notifyTelegramError(
+                                            uploadNotificationId,
+                                            viewState.title,
+                                            e.message ?: "",
+                                        )
+                                    }
+                            }
+                        }
+
+                        downloadState = Completed(pathList.firstOrNull())
                     }
                     .onFailure { throwable ->
                         if (throwable is YoutubeDL.CanceledException) {

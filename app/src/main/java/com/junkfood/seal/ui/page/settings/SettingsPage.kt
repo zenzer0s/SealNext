@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AudioFile
 import androidx.compose.material.icons.rounded.BugReport
+import androidx.compose.material.icons.rounded.Cloud
 import androidx.compose.material.icons.rounded.EnergySavingsLeaf
 import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.Info
@@ -220,6 +221,15 @@ fun SettingsPage(onNavigateBack: () -> Unit, onNavigateTo: (String) -> Unit) {
                     icon = Icons.Rounded.ViewComfy,
                 ) {
                     onNavigateTo(Route.INTERACTION)
+                }
+            }
+            item {
+                SettingItem(
+                    title = stringResource(R.string.fast_mode_telegram),
+                    description = stringResource(R.string.fast_mode_telegram_settings_desc),
+                    icon = Icons.Rounded.Cloud,
+                ) {
+                    onNavigateTo(Route.TELEGRAM_SETTINGS)
                 }
             }
             item {

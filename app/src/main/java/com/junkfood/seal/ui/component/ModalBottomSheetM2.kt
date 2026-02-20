@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.material.ExperimentalMaterialApi::class)
+
 package com.junkfood.seal.ui.component
 
 import androidx.compose.foundation.background

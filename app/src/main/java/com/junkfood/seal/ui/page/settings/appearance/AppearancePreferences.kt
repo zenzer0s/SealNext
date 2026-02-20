@@ -47,10 +47,11 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.pager.HorizontalPagerIndicator
+import com.junkfood.seal.ui.component.HorizontalPagerIndicator
 import com.google.android.material.color.DynamicColors
 import com.junkfood.seal.R
 import com.junkfood.seal.download.Task
@@ -216,7 +217,7 @@ fun AppearancePreferences(onNavigateBack: () -> Unit, onNavigateTo: (String) -> 
                 PreferenceItem(
                     title = stringResource(R.string.language),
                     icon = Icons.Outlined.Language,
-                    description = Locale.getDefault().toDisplayName(),
+                    description = LocalConfiguration.current.locales[0].toDisplayName(),
                 ) {
                     onNavigateTo(Route.LANGUAGES)
                 }
@@ -314,3 +315,4 @@ fun RowScope.ColorButtonImpl(
         }
     }
 }
+ 
